@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedding Space Explorer — 3D Word Embedding Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">◈</div>
+            <div>
+                <h1>Embedding <span>Space</span> Explorer</h1>
+                <div class="subtitle">5,000 words in 3D semantic space</div>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="header-btn" id="btn-reset-camera">Reset Camera</button>
+            <button class="header-btn" id="btn-toggle-arithmetic">Vector Arithmetic</button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+
+        <!-- 3D Scene Area -->
+        <div class="scene-area">
+            <div id="three-container"></div>
+
+            <!-- Scene Overlay: Search + Stats -->
+            <div class="scene-overlay">
+                <div class="search-container">
+                    <span class="search-icon">⌕</span>
+                    <input type="text" class="search-box" id="search-input" placeholder="Search for a word..." autocomplete="off" spellcheck="false">
+                    <div class="search-dropdown" id="search-dropdown"></div>
+                </div>
+                <div class="stat-badges">
+                    <div class="stat-badge">Words <span class="value" id="stat-words">5,000</span></div>
+                    <div class="stat-badge">Dimensions <span class="value">50d → 3d</span></div>
+                    <div class="stat-badge">Model <span class="value">GloVe 6B</span></div>
+                    <div class="stat-badge">Projection <span class="value">UMAP</span></div>
+                </div>
+            </div>
+
+            <!-- Bottom Info Cards -->
+            <div class="info-cards-overlay">
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h3><span class="dot" style="background: var(--accent-cyan)"></span>Word Embeddings</h3>
+                        <p>Each dot is a word represented as a <code>50-dimensional</code> vector, trained on 6 billion tokens of text. Words used in similar contexts end up with similar vectors — so <code>"king"</code> and <code>"queen"</code> are close neighbors.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><span class="dot" style="background: var(--accent-magenta)"></span>Dimensionality Reduction</h3>
+                        <p><code>UMAP</code> projects the 50D vectors into 3D space while preserving local neighborhoods. Clusters that form naturally reveal semantic categories — nature words group together, emotions cluster nearby.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><span class="dot" style="background: var(--accent-yellow)"></span>Vector Arithmetic</h3>
+                        <p>Embeddings encode meaning as direction. The classic example: <code>king − man + woman ≈ queen</code>. The "royalty" direction is preserved when you swap gender. Try the analogies in the side panel.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Info Panel -->
+        <div class="info-panel">
+
+            <!-- Selected Word -->
+            <div class="panel-section" id="section-selected">
+                <div class="panel-title">Selected Word</div>
+                <div class="selected-word empty" id="selected-word">Click a word or search</div>
+                <div id="selected-category"></div>
+            </div>
+
+            <!-- Neighbors -->
+            <div class="panel-section" id="section-neighbors">
+                <div class="panel-title">Nearest Neighbors</div>
+                <div id="neighbors-container">
+                    <div class="empty-state">
+                        Select a word to see its nearest neighbors in embedding space
+                        <div class="hint">Click a dot or type in the search box</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vector Arithmetic -->
+            <div class="panel-section" id="section-arithmetic" style="display: none;">
+                <div class="panel-title">Vector Arithmetic</div>
+                <div class="analogy-buttons" id="analogy-buttons"></div>
+                <div class="arithmetic-status" id="arithmetic-status"></div>
+            </div>
+
+            <!-- Category Legend -->
+            <div class="panel-section">
+                <div class="panel-title">Categories</div>
+                <div class="legend-grid" id="legend-grid"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Embedding data (global, loaded before modules) -->
+    <script src="data/embeddings.js"></script>
+
+    <!-- ES Module import map for Three.js r160 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <!-- App entry point (ES module) -->
+    <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
