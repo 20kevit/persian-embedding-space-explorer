@@ -1,14 +1,32 @@
 /**
  * data.js — Data access layer over EMBEDDING_DATA global
+ *
+ * لایهٔ دسترسی به داده. دادهٔ اصلی (بردارها، مختصات، همسایه‌ها)
+ * دست‌نخورده می‌ماند؛ ترجمه‌های فارسی از FA_TRANSLATIONS خوانده می‌شوند
+ * و صرفاً نقش نمایشی دارند (هرگز به‌عنوان شناسه استفاده نمی‌شوند).
  */
+import { normalizeFa, normalizeEn } from './fa-utils.js';
 
 const data = window.EMBEDDING_DATA;
+const faMap = window.FA_TRANSLATIONS || {};
 const wordIndex = {};
 const wordCount = data.words.length;
 
-// Build word → index lookup
+// Build word → index lookup (original English identifiers, case-insensitive)
 for (let i = 0; i < wordCount; i++) {
     wordIndex[data.words[i].toLowerCase()] = i;
+}
+
+// Build normalized Persian label → [indices] reverse lookup.
+// برچسب‌های فارسی تکراری ممکن است چند توکن داشته باشند؛
+// هر توکن شناسهٔ مستقل خود را حفظ می‌کند.
+const faIndex = {};
+for (let i = 0; i < wordCount; i++) {
+    const fa = faMap[data.words[i]];
+    if (!fa) continue;
+    const key = normalizeFa(fa);
+    if (!key) continue;
+    (faIndex[key] || (faIndex[key] = [])).push(i);
 }
 
 // Category colors (matching CSS)
@@ -36,6 +54,23 @@ const EmbeddingStore = {
         return data.words[i];
     },
 
+    /** برچسب فارسی واژه (در صورت نبود ترجمه، توکن اصلی انگلیسی). */
+    getFa(i) {
+        return faMap[data.words[i]] || data.words[i];
+    },
+
+    /** ترجمهٔ فارسی یک توکن انگلیسی (با نرمال‌سازی کلید). */
+    getFaByWord(word) {
+        if (!word) return '';
+        return faMap[word] || faMap[word.toLowerCase()] || word;
+    },
+
+    /** نام دستهٔ فارسی برای نمایش (کلاس CSS همچنان انگلیسی می‌ماند). */
+    getCategoryFa(i) {
+        const name = data.categoryNames[data.categories[i]];
+        return (window.CATEGORY_FA && window.CATEGORY_FA[name]) || name;
+    },
+
     getPosition(i) {
         const idx = i * 3;
         return {
@@ -61,6 +96,10 @@ const EmbeddingStore = {
         return data.categoryNames;
     },
 
+    getCategoryFaMap() {
+        return window.CATEGORY_FA || {};
+    },
+
     getCategoryColor(i) {
         return colorArray[data.categories[i]];
     },
@@ -74,24 +113,82 @@ const EmbeddingStore = {
         return Array.prototype.slice.call(data.vectors, start, start + data.vectorDim);
     },
 
+    getVectors() {
+        return data.vectors;
+    },
+
+    getVectorDim() {
+        return data.vectorDim;
+    },
+
     getAnalogies() {
         return data.analogies;
     },
 
+    /** Exact lookup: English token (case-insensitive) یا برچسب فارسی نرمال‌شده. */
     lookup(word) {
-        const idx = wordIndex[word.toLowerCase()];
-        return idx !== undefined ? idx : -1;
+        if (!word) return -1;
+        const en = normalizeEn(word);
+        if (en) {
+            const idx = wordIndex[en];
+            if (idx !== undefined) return idx;
+        }
+        const fa = normalizeFa(word);
+        if (fa && faIndex[fa] && faIndex[fa].length > 0) {
+            return faIndex[fa][0];
+        }
+        return -1;
     },
 
+    /** همهٔ شاخص‌هایی که با پرسش فارسی/انگلیسی منطبق دقیق‌اند. */
+    lookupAll(word) {
+        if (!word) return [];
+        const en = normalizeEn(word);
+        if (en && wordIndex[en] !== undefined) return [wordIndex[en]];
+        const fa = normalizeFa(word);
+        if (fa && faIndex[fa]) return faIndex[fa].slice();
+        return [];
+    },
+
+    /**
+     * جست‌وجوی پیشوندی ترکیبی (انگلیسی + فارسی).
+     * ترتیب: تطابق دقیق انگلیسی ← تطابق دقیق فارسی ← پیشوند انگلیسی ← پیشوند فارسی.
+     * حداکثر ۸ نتیجه؛ برای واژه‌های فارسی تکراری همهٔ گزینه‌ها با نمایش توکن انگلیسی برگردانده می‌شوند.
+     */
     search(prefix) {
-        if (!prefix || prefix.length === 0) return [];
-        prefix = prefix.toLowerCase();
+        if (!prefix || String(prefix).length === 0) return [];
+        const qEn = normalizeEn(prefix);
+        const qFa = normalizeFa(prefix);
+        if (!qEn && !qFa) return [];
+
         const results = [];
-        for (let i = 0; i < wordCount && results.length < 8; i++) {
-            if (data.words[i].toLowerCase().indexOf(prefix) === 0) {
+        const seen = new Set();
+        const push = (i) => {
+            if (!seen.has(i) && results.length < 8) {
+                seen.add(i);
                 results.push(i);
             }
+        };
+
+        // 1) تطابق دقیق انگلیسی (O(1))
+        if (qEn && wordIndex[qEn] !== undefined) push(wordIndex[qEn]);
+
+        // 2) تطابق دقیق فارسی (ممکن است چند توکن باشد → نمایش همه برای ابهام‌زدایی)
+        if (qFa && faIndex[qFa]) {
+            for (const i of faIndex[qFa]) push(i);
         }
+
+        // 3) پیشوند انگلیسی و فارسی
+        for (let i = 0; i < wordCount && results.length < 8; i++) {
+            const w = data.words[i].toLowerCase();
+            if (qEn && w.indexOf(qEn) === 0) push(i);
+            if (results.length >= 8) break;
+            if (qFa) {
+                const fa = faMap[data.words[i]];
+                if (fa && normalizeFa(fa).indexOf(qFa) === 0) push(i);
+            }
+        }
+
         return results;
     },
 

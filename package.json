@@ -1,0 +1,16 @@
+{
+  "name": "persian-embedding-space-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Persian (fa-IR) localization of Embedding Space Explorer — presentation layer only, original English embeddings preserved",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}

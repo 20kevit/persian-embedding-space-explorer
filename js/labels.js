@@ -129,7 +129,8 @@ function update() {
             label.userData.wordIndex = idx;
 
             const div = label.element;
-            div.textContent = EmbeddingStore.getWord(idx);
+            // برچسب فارسی در فضای سه‌بعدی؛ شناسه داخلی همچنان توکن انگلیسی است
+            div.textContent = EmbeddingStore.getFa(idx);
 
             div.className = 'word-label';
             if (arithmeticSet[idx]) {

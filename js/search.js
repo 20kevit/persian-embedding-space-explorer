@@ -1,5 +1,7 @@
 /**
  * search.js — Search input, autocomplete, camera fly-to animation
+ * جست‌وجو با واژه‌های فارسی یا انگلیسی؛ نتایج با برچسب فارسی نمایش داده می‌شوند
+ * و توکن انگلیسی به‌عنوان ابهام‌زدای درج می‌شود.
  */
 import * as THREE from 'three';
 import EmbeddingStore from './data.js';
@@ -53,7 +55,8 @@ function onInput() {
         renderDropdown();
         showDropdown();
     } else {
-        hideDropdown();
+        renderNoResults(val);
+        showDropdown();
     }
 }
 
@@ -98,10 +101,26 @@ function renderDropdown() {
         const div = document.createElement('div');
         div.className = 'search-item' + (i === selectedDropdownIndex ? ' selected' : '');
         const catName = EmbeddingStore.getCategoryName(idx);
-        div.innerHTML = '<span class="cat-dot cat-dot-' + catName + '"></span>' +
-                        '<span>' + EmbeddingStore.getWord(idx) + '</span>';
+        const fa = EmbeddingStore.getFa(idx);
+        const en = EmbeddingStore.getWord(idx);
+
+        const dot = document.createElement('span');
+        dot.className = 'cat-dot cat-dot-' + catName;
+        const faSpan = document.createElement('span');
+        faSpan.className = 'si-fa';
+        faSpan.textContent = fa;
+        div.appendChild(dot);
+        div.appendChild(faSpan);
+        if (fa !== en) {
+            const enSpan = document.createElement('span');
+            enSpan.className = 'si-en';
+            enSpan.dir = 'ltr';
+            enSpan.textContent = en;
+            div.appendChild(enSpan);
+        }
+
         div.dataset.index = idx;
-        div.addEventListener('click', function() {
+        div.addEventListener('click', function () {
             selectWord(parseInt(this.dataset.index));
             hideDropdown();
         });
@@ -109,11 +128,20 @@ function renderDropdown() {
     }
 }
 
+function renderNoResults(query) {
+    dropdown.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'search-empty';
+    div.textContent = 'برای «' + query + '» واژه‌ای یافت نشد';
+    dropdown.appendChild(div);
+}
+
 function showDropdown() { dropdown.classList.add('visible'); }
 function hideDropdown() { dropdown.classList.remove('visible'); }
 
 function selectWord(wordIndex) {
-    input.value = EmbeddingStore.getWord(wordIndex);
+    // در ورودی، برچسب فارسی نمایش داده می‌شود؛ شناسهٔ داخلی همان توکن انگلیسی است.
+    input.value = EmbeddingStore.getFa(wordIndex);
     window.dispatchEvent(new CustomEvent('word-selected', { detail: { index: wordIndex } }));
     flyToWord(wordIndex);
 }

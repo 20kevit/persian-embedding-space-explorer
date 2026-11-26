@@ -1,116 +1,122 @@
-# Embedding Space Explorer
+# کاوشگر فضای امبدینگ — نسخهٔ فارسی
 
-A 3D particle universe where 5,000 words float as glowing dots, clustered by semantic similarity. Type a word and the camera flies to its neighborhood. Watch vector arithmetic come alive as animated arrows trace `king − man + woman = queen` through space.
+نمایشگر سه‌بعدی تعاملی از ۵٬۰۰۰ واژه که هر واژه یک نقطهٔ درخشان در فضای معنایی است و بر اساس شباهت معنایی خوشه می‌شود. یک واژه را تایپ کنید تا دوربین به محلهٔ همسایگی آن پرواز کند، و محاسبات برداری را با پیکان‌های متحرک ببینید: `king − man + woman = queen`.
 
-This project was created as a study exercise to understand how word embeddings work — how neural networks represent language as geometry, how meaning maps to direction, and how simple vector math can capture complex analogies.
-
-Built with vanilla JavaScript and Three.js. No frameworks, no build tools, no server required. Part of the neural network trilogy alongside [neural-network-numbers](https://github.com/williankeller/neural-network-numbers) and [neural-network-driving](https://github.com/williankeller/neural-network-driving).
+این مخزن، بومی‌سازی کامل (فارسی، راست‌به‌چپ) پروژهٔ [Embedding Space Explorer](https://github.com/williankeller/embedding-space-explorer) اثر [Willian Keller](https://github.com/williankeller) است: **ارائه فارسی، بردارهای اصلی انگلیسی، ریاضیات بدون تغییر.**
 
 ![Words: 5,000](https://img.shields.io/badge/words-5%2C000-00f5ff?style=flat-square)
 ![Model: GloVe 6B](https://img.shields.io/badge/model-GloVe%206B-ff00aa?style=flat-square)
 ![Projection: UMAP](https://img.shields.io/badge/projection-UMAP-f5ff00?style=flat-square)
-![No Build Tools](https://img.shields.io/badge/build%20tools-none-00ff88?style=flat-square)
+![Locale: fa-IR RTL](https://img.shields.io/badge/locale-fa--IR%20RTL-00ff88?style=flat-square)
 
-## What This Is
+> **نکتهٔ شفافیت (مهم):**
+> این نمایشگر از بردارهای معنایی کلمات انگلیسی استفاده می‌کند. واژه‌ها برای سهولت استفاده به فارسی نمایش داده شده‌اند، اما موقعیت آن‌ها و روابط معنایی همچنان بر اساس مدل اصلی انگلیسی محاسبه می‌شود. بنابراین این ابزار نمایش فارسی‌شدهٔ فضای معنایی انگلیسی است، نه یک مدل Embedding فارسی.
 
-An interactive 3D visualization of word embeddings — the numerical representations that neural networks use to understand language. Each word is a point in 50-dimensional space, projected down to 3D using UMAP so you can see the structure emerge naturally.
+این یادداشت به‌صورت ثابت در پنل «دربارهٔ این نمایشگر» در همهٔ اندازه‌های صفحه نمایش داده می‌شود.
 
-- **Semantic Clusters:** Nature words clump together. Emotions form their own neighborhood. Technology terms cluster near science. The structure is learned, not designed.
-- **Nearest Neighbors:** Search for any word to see its 10 closest neighbors in the original 50D space, connected by glowing lines — revealing what the model considers "similar."
-- **Vector Arithmetic:** The famous `king − man + woman = queen` analogy, animated as arrows through 3D space. Watch the direction of "royalty" be preserved when you swap gender.
-- **12 Color-Coded Categories:** Words are colored by semantic category (nature, technology, people, emotion, science, etc.) so you can see clusters at a glance.
+## این پروژه چیست؟
 
-## Demo
+نمایشگر تعاملی سه‌بعدی امبدینگ واژه‌ها — همان بازنمایی عددی که زبان را به هندسه تبدیل می‌کند. هر واژه نقطه‌ای در فضای ۵۰بُعدی است که با UMAP به سه بُعد کاهش یافته تا ساختار طبیعی آن دیده شود.
 
-Hosted version: [williankeller.github.io/embedding-space-explorer](https://williankeller.github.io/embedding-space-explorer/)
+- **خوشه‌های معنایی:** واژه‌های طبیعت کنار هم، احساسات در محلهٔ خودشان، فناوری نزدیک علم — ساختار آموخته‌شده است، نه طراحی‌شده.
+- **نزدیک‌ترین همسایه‌ها:** برای هر واژه ۱۰ همسایهٔ نزدیک آن در فضای اصلی ۵۰بُعدی با خط‌های درخشان نمایش داده می‌شود.
+- **محاسبات برداری:** قیاس معروف `king − man + woman = queen` به‌صورت پیکان متحرک در فضای سه‌بعدی؛ همچنین **قیاس دلخواه** با واژه‌های فارسی یا انگلیسی (بررسی کوسینوسی روی بردارهای اصلی).
+- **۱۲ دستهٔ رنگی:** رنگ هر واژه بر اساس دستهٔ معنایی آن است.
+- **جست‌وجوی فارسی:** تایپ با واژهٔ فارسی یا انگلیسی؛ نتایج با برچسب فارسی و توکن انگلیسی به‌عنوان ابهام‌زدای نمایش داده می‌شود. نرمال‌سازی ی/ی، ک/ک، نیم‌فاصله و اعراب پشتیبانی می‌شود.
 
-Or run it locally — see below.
+## نحوهٔ اجرا
 
-## Running Locally
-
-Since the app uses ES modules, you need a local server:
+چون اپ از ES modules استفاده می‌کند، به یک سرور محلی نیاز دارد:
 
 ```bash
-npx serve .
-# or
 python3 -m http.server
-# Open http://localhost:3000 (or :8000)
+# یا
+npx serve .
+# سپس http://localhost:8000 را باز کنید
 ```
 
-The embedding data is pre-generated and included in the repo, so there's nothing to install or build.
+دادهٔ امبدینگ از پیش تولید و در مخزن قرار دارد؛ چیزی برای نصب یا بیلد نیست.
 
-## Regenerating Embeddings
+## معماری بومی‌سازی (لایهٔ فارسی)
 
-If you want to regenerate the embedding data from scratch (not required to run the app):
+اصول کار:
 
-```bash
-pip install numpy umap-learn
-python preprocess/generate_embeddings.py
-```
+1. **دادهٔ اصلی دست‌نخورده است.** `data/embeddings.js` (بردارها، مختصات، همسایه‌ها، دسته‌ها، قیاس‌ها) با هش‌های پایهٔ پیش از بومی‌سازی تأیید می‌شود و هرگز تغییر نمی‌کند.
+2. **توکن‌های انگلیسی شناسهٔ داخلی‌اند.** جست‌وجو، انتخاب، اتصال همسایگان و محاسبات روی همان شناسه‌های اصلی انجام می‌شود.
+3. **ترجمه‌ها فقط لایهٔ نمایش‌اند.** `data/fa.js` نگاشت ۵٬۰۰۰‌به‌۵٬۰۰۰ واژه (توکن انگلیسی ← برچسب فارسی) به‌همراه نام فارسی ۱۲ دسته است و در DOM و برچسب‌های سه‌بعدی به‌کار می‌رود.
+4. **هیچ مدل امبدینگ فارسی‌ای وجود ندارد** و هیچ برداری تولید، جایگزین یا تغییر داده نشده است.
 
-This will:
-
-1. Download GloVe 6B vectors (~862MB, cached in `preprocess/glove_data/`)
-2. Filter to ~5,000 clean English words
-3. Assign semantic categories via hardcoded word lists
-4. Run UMAP to project 50D → 3D (cosine metric, 15 neighbors)
-5. Pre-compute 10 nearest neighbors per word
-6. Compute vector arithmetic examples (`king − man + woman`, `paris − france + italy`, etc.)
-7. Export `data/embeddings.js` (~2.3MB)
-
-## Project Structure
+### پوشه‌ها
 
 ```
-embedding-space-explorer/
-├── index.html                  # Entry point — ES module import map + layout
-├── style.css                   # Dark theme, glassmorphism, category colors
+├── index.html                  # نقطهٔ ورود — RTL فارسی + import map محلی
+├── style.css                   # تم تاریک، شیشه‌ای، فونت وزیرمتن، چیدمان راست‌به‌چپ
 ├── js/
-│   ├── main.js                 # Three.js scene, camera, controls, animation loop
-│   ├── particles.js            # Point cloud with custom GLSL glow shader
-│   ├── labels.js               # CSS2DRenderer — pooled word labels (max 50)
-│   ├── search.js               # Search autocomplete + camera fly-to animation
-│   ├── arithmetic.js           # Vector arithmetic demo with animated 3D arrows
-│   └── data.js                 # Data access layer over EMBEDDING_DATA global
+│   ├── main.js                 # صحنهٔ Three.js، انتخاب واژه، راهنمای دسته‌ها
+│   ├── particles.js            # ابر نقطه‌ای با شیدر GLSL (بدون متن کاربرپسند)
+│   ├── labels.js               # برچسب‌های CSS2D (حداکثر ۵۰) با متن فارسی
+│   ├── search.js               # جست‌وجوی فارسی/انگلیسی + پرواز دوربین
+│   ├── arithmetic.js           # قیاس‌های آماده + قیاس دلخواه + پیکان‌های متحرک
+│   ├── data.js                 # لایهٔ دسترسی به داده + ایندекс معکوس فارسی
+│   ├── fa-utils.js             # نرمال‌سازی فارسی/انگلیسی و پارسر قیاس (خالص)
+│   └── arithmetic-core.js      # ترکیب برداری و کوسینوس (خالص، قابل تست)
 ├── data/
-│   └── embeddings.js           # Pre-computed: words, positions, categories, neighbors
-├── preprocess/
-│   └── generate_embeddings.py  # GloVe → UMAP → JS export pipeline
+│   ├── embeddings.js           # دادهٔ اصلی (دست‌نخورده، ۲.۳MB)
+│   └── fa.js                   # واژه‌نامهٔ فارسی ۵٬۰۰۰واژه‌ای + نام دسته‌ها
+├── vendor/                     # three@0.160 و فونت وزیرمتن (بدون CDN)
+├── tests/                      # تست‌های Node و مرورگر
+├── preprocess/                 # خط تولید دادهٔ اصلی (بدون تغییر)
 ├── CONTRIBUTING.md
-├── LICENSE
+├── LICENSE                     # MIT — © Willian Keller
 └── README.md
 ```
 
-## How It Works
+## واژه‌نامهٔ فارسی — پوشش و ابهام‌ها
 
-### Word Embeddings (GloVe)
+- **پوشش: ۵٬۰۰۰ از ۵٬۰۰۰ (۱۰۰٪)** — هر توکن واژگان اصلی یک برچسب فارسی دارد؛ کلید اضافه یا کم ندارد.
+- **۴٬۲۰۵ برچسب یکتا** و **۶۴۳ گروه برچسب تکراری** (۷۹۵ توکن با برچسب مشترک، مانند «بازگشت»×۵).
+- برچسب تکراری **هرگز توکن‌ها را ادغام نمی‌کند**: شناسه‌های انگلیسی مستقل می‌مانند و در فهرست نتایج جست‌وجو با نمایش توکن انگلیسی از هم تفکیک می‌شوند (ابهام‌زدایی).
+- نرمال‌سازی جست‌وجو: ی عربی ← ی فارسی، ک عربی ← ک فارسی، حذف نیم‌فاصله و اعراب، تبدیل ارقام فارسی، حساسیت نسبت به حروف انگلیسی.
 
-GloVe (Global Vectors for Word Representation) learns word vectors by analyzing co-occurrence statistics across a massive text corpus. The key insight: words that appear in similar contexts get similar vectors. The 50-dimensional vectors capture relationships like synonymy, analogy, and category membership — all encoded as directions in high-dimensional space.
+## تست‌ها
 
-### Dimensionality Reduction (UMAP)
+```bash
+npm test              # ۱۴۴ تست Node: یکپارچگی داده، پوشش ترجمه، جست‌وجو، ریاضیات، بومی‌سازی
+CHROMIUM_PATH=/tmp/chromium npm run test:browser   # ۷۷ تست مرورگر در ۵ عرض
+```
 
-50 dimensions are impossible to visualize. UMAP (Uniform Manifold Approximation and Projection) compresses them to 3D while preserving local neighborhood structure. Words that were close in 50D stay close in 3D. The resulting point cloud reveals natural clusters — not because we told it about categories, but because the embeddings already contain that structure.
+- **یکپارچگی داده:** SHA-256 شش بخش دادهٔ اصلی با مقادیر پایهٔ پیش از بومی‌سازی برابر است.
+- **پوشش ترجمه:** برابری دقیق مجموعهٔ کلیدها با واژگان اصلی + گزارش تکرارها.
+- **جست‌وجو و محاسبات:** نرمال‌سازی فارسی، تطابق دقیق/پیشوندی، تفکیک برچسب‌های تکراری، پارسر قیاس، ترکیب برداری و کوسینوس.
+- **مرورگر (Chromium):** رندر WebGL، RTL، فونت وزیرمتن، جست‌وجو و انتخاب واژه، حالت «یافت نشد»، قیاس دلخواه، انیمیشن قیاس آماده، و واکنش‌گرایی در عرض‌های **۳۶۰ / ۳۹۰ / ۷۶۸ / ۱۰۲۴ / ۱۴۴۰** بدون خطای کنسول.
 
-### Vector Arithmetic
+گزارش کامل تست: [TEST_REPORT.md](TEST_REPORT.md).
 
-The most remarkable property of word embeddings: relationships are encoded as vector directions. Subtracting `man` from `king` gives a "royalty without masculinity" vector. Adding `woman` lands near `queen`. This works for geography (`Paris − France + Italy ≈ Rome`) and many other semantic relationships.
+## استقرار (GitHub Pages)
 
-### Rendering
+همه‌چیز استاتیک است؛ بدون بیلد، بدون سرور، بدون وابستگی CDN (three و فونت وزیرمتن داخل `vendor/` هستند). کافی است Pages را روی همین مخزن فعال کنید.
 
-The point cloud uses a custom GLSL shader with additive blending — overlapping particles glow brighter, creating a natural density visualization. CSS2D labels are pooled (max 50 visible) and assigned by priority: selected word > neighbors > nearest to camera. Neighbor connections are drawn as additive-blended lines that fade by rank. Camera fly animations use cubic ease-in-out interpolation.
+## پشتهٔ فنی
 
-## Tech Stack
+- **Three.js r160** — رندر WebGL، OrbitControls، CSS2DRenderer (import map محلی)
+- **GloVe 6B 50d** — بردارهای واژهٔ پیش‌آموزش‌شدهٔ Stanford NLP (بدون تغییر)
+- **UMAP** — کاهش بُعد (پیش‌پردازش پایتون، بدون تغییر)
+- **وزیرمتن** — فونت فارسی، به‌صورت محلی (woff2 در `vendor/fonts/`)
+- **ابزار بیلد: صفر** — HTML/CSS/JS خام
 
-- **Three.js r160** — WebGL rendering, OrbitControls, CSS2DRenderer (via ES module import maps)
-- **GloVe 6B 50d** — Pre-trained word vectors (Stanford NLP)
-- **UMAP** — Dimensionality reduction (Python preprocessing, via `umap-learn`)
-- **Fonts** — Space Grotesk, JetBrains Mono (Google Fonts)
-- **Design** — Dark theme with cyan/magenta/yellow/green accents
-- **Zero build tools** — Pure HTML/CSS/JS, CDN dependencies, GitHub Pages ready
+## ساختار «چگونه کار می‌کند»
 
-## Deploying to GitHub Pages
+**امبدینگ واژه‌ها (GloVe):** بردارها از آمار هم‌رخدادی در پیکرهٔ متنی بزرگ آموخته می‌شوند؛ واژه‌هایی که در بافت‌های مشابه می‌آیند بردار مشابه می‌گیرند و روابطی مانند مترادف، قیاس و عضویت دسته در جهت‌های فضا رمزگذاری می‌شود.
 
-Push to a GitHub repository and enable Pages from Settings → Pages → Source: main branch. Everything is static — no build step required. The only CDN dependency is Three.js, loaded via import map at runtime.
+**کاهش بُعد (UMAP):** ۵۰ بُعد قابل رسم نیست؛ UMAP آن‌ها را با حفظ محله‌های همسایگی به ۳ بُعد می‌فشارد. خوشه‌ها طبیعی‌اند چون ساختار از قبل در بردارها وجود داشته است.
 
-## License
+**محاسبات برداری:** رابطه‌ها به‌صورت جهت رمزگذاری شده‌اند: `king − man` بردار «سلطنت بدون مردانگی» است و افزودن `woman` به `queen` می‌رسد. این الگو برای جغرافیا (`Paris − France + Italy ≈ Rome`) و بسیاری روابط معنایی دیگر هم کار می‌کند. در این نسخه، قیاس دلخواه با واژه‌های فارسی هم پذیرفته می‌شود و نتیجه با کوسینوس روی همان بردارهای اصلی پیدا می‌شود.
 
-MIT
+**رندر:** ابر نقطه‌ای با شیدر GLSL و ترکیب افزایشی (هم‌پوشانی ذرات روشن‌تر می‌شود)، برچسب‌های CSS2D با سهمیهٔ حداکثر ۵۰ و اولویت‌بندی (واژهٔ انتخاب‌شده ← همسایگان ← نزدیک‌ترین به دوربین)، خطوط اتصال همسایه بر اساس رتبه و انیمیشن پرواز با ease-in-out مکعبی.
+
+## انتساب و مجوز
+
+- پروژهٔ اصلی: [Embedding Space Explorer](https://github.com/williankeller/embedding-space-explorer) — ساختهٔ [Willian Keller](https://github.com/williankeller) (بخشی از مجموعهٔ «سه‌گانهٔ شبکهٔ عصبی» همراه با [neural-network-numbers](https://github.com/williankeller/neural-network-numbers) و [neural-network-driving](https://github.com/williankeller/neural-network-driving)).
+- نسخهٔ اصلی: [williankeller.github.io/embedding-space-explorer](https://williankeller.github.io/embedding-space-explorer/)
+- داده: GloVe 6B (Stanford NLP) — [گواهی استفاده](https://nlp.stanford.edu/projects/glove/)
+- مجوز: [MIT](LICENSE) — © Willian Keller. بومی‌سازی فارسی ذیل همین مجوز ارائه می‌شود.
