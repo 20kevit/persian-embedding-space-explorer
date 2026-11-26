@@ -1,5 +1,8 @@
-# فعال‌سازی GitHub Pages (استاتیک، از همین شاخه) با توکن workflow
-name: Enable Pages
+# فعال‌سازی و استقرار GitHub Pages از همین شاخه
+# ۱) تلاش برای فعال‌سازی Pages با build_type=workflow (توکن workflow با مجوز pages:write)
+# ۡ) در صورت موفقیت، استقرار کامل سایت استاتیک با actions/deploy-pages
+# ۳) نتیجهٔ تشخیصی از طریق Checks API ثبت می‌شود (قابل خواندن با api.github.com)
+name: Deploy Persian site to Pages
 
 on:
   push:
@@ -11,47 +14,66 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  checks: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  enable-pages:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
     steps:
-      - name: Ensure GitHub Pages is enabled for this branch
+      - uses: actions/checkout@v4
+
+      - name: Enable Pages + decide deploy mode
+        id: enable
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH: arena/95e0c1a0-persian-embedding-space-explor
         run: |
           set -uo pipefail
-          report() { # context code body
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
-              -f state=failure -f context="$1" \
-              -f description="$(printf '%s' "$3" | head -c 130)" >/dev/null 2>&1 || true
+          diag() { # title body
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+              -f name=pages-diag -f head_sha="${GITHUB_SHA}" -f status=completed -f conclusion=success \
+              -f "output[title]=$1" -f "output[summary]=$2" >/dev/null 2>&1 || true
           }
-          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
-            echo "Pages already enabled."
-            gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{html_url,status,source}'
+          GETCODE=$(curl -sS -o /tmp/get -w '%{http_code}' \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages") || GETCODE=curlfail
+          if [ "$GETCODE" = "200" ]; then
+            BT=$(grep -o '"build_type":"[^"]*"' /tmp/get | head -1 | cut -d'"' -f4)
+            diag "Pages already enabled (build_type=${BT})" "$(cat /tmp/get | head -c 1500)"
+            if [ "$BT" = "workflow" ]; then
+              echo "mode=deploy" >> "$GITHUB_OUTPUT"
+            else
+              echo "mode=branch" >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
-          # variant 1: source only
-          c1=$(curl -sS -o /tmp/r1 -w '%{http_code}' -X POST \
+          POSTCODE=$(curl -sS -o /tmp/post -w '%{http_code}' -X POST \
             -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" \
-            -d "{\"source\":{\"branch\":\"${BRANCH}\",\"path\":\"/\"}}") || c1=curlfail
-          report pages-diag-1 "$c1" "$(cat /tmp/r1 2>/dev/null)"
-          echo "variant1: $c1 $(cat /tmp/r1 2>/dev/null)"
-          if [ "$c1" = "201" ] || [ "$c1" = "200" ]; then
-            gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{html_url,status,source}'
-            exit 0
+            -d '{"build_type":"workflow"}') || POSTCODE=curlfail
+          diag "POST /pages build_type=workflow → ${POSTCODE}" "$(cat /tmp/post | head -c 1500)"
+          if [ "$POSTCODE" = "201" ] || [ "$POSTCODE" = "200" ]; then
+            echo "mode=deploy" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=failed" >> "$GITHUB_OUTPUT"
           fi
-          # variant 2: with build_type=legacy
-          c2=$(curl -sS -o /tmp/r2 -w '%{http_code}' -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" \
-            -d "{\"source\":{\"branch\":\"${BRANCH}\",\"path\":\"/\"},\"build_type\":\"legacy\"}") || c2=curlfail
-          report pages-diag-2 "$c2" "$(cat /tmp/r2 2>/dev/null)"
-          echo "variant2: $c2 $(cat /tmp/r2 2>/dev/null)"
-          if [ "$c2" = "201" ] || [ "$c2" = "200" ]; then
-            gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '{html_url,status,source}'
-            exit 0
-          fi
-          exit 1
+
+      - name: Setup Pages
+        if: steps.enable.outputs.mode == 'deploy'
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        if: steps.enable.outputs.mode == 'deploy'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        if: steps.enable.outputs.mode == 'deploy'
+        uses: actions/deploy-pages@v4
+        id: deploy
